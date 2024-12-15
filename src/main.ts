@@ -2,7 +2,13 @@ import { createApp } from 'vue'
 import './style.css'
 import App from './App.vue'
 
-Array.prototype.move = function (from: number, to: number) {
+declare global {
+  interface Array<T> {
+    move(from: number, to: number): void
+  }
+}
+
+Array.prototype.move = function (from: number, to: number): void {
   this.splice(to, 0, this.splice(from, 1)[0]);
 }
 

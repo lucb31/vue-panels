@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, inject, Ref, ref } from 'vue';
-import { TabItem } from './TabItem';
+import { TabItem } from '../types/TabItem';
 import { PanelItem } from '../types/PanelItem';
 
 const props = defineProps<{ id: string }>()
