@@ -44,12 +44,13 @@ onMounted(() => {
 })
 
 function getPanelTarget(): string {
-  console.log("recalculating teleport target")
   if (!parentPanel.value) {
     console.error("Could not determine active panel for tab")
     return 'body'
   }
-  return `#panel-content-${parentPanel.value.id}`
+  const result = `#panel-content-${parentPanel.value.id}`
+  console.log("new teleport target", result)
+  return result
 }
 </script>
 
