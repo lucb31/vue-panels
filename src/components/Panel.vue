@@ -151,6 +151,7 @@ function handleDragEnd() {
   height: 100%;
   display: flex;
   flex-direction: column;
+  padding: 8px;
 }
 
 .panel-content {
@@ -158,12 +159,14 @@ function handleDragEnd() {
   background-color: lightgray;
   flex-grow: 1;
   color: black;
+  padding: 8px;
 }
 
 .panel-navigation ul {
   list-style: none;
   display: flex;
   gap: 8px;
+  padding-inline-start: 0;
 
   li {
     border-bottom: 2px solid #e0e0e0;

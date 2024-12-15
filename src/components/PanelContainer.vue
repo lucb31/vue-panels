@@ -51,5 +51,6 @@ function handleTabDropped(tabId: string, panelId: string, nextIdx: number) {
   padding: 8px;
 
   display: flex;
+  gap: 8px;
 }
 </style>
