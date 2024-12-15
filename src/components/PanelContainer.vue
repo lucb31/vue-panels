@@ -35,10 +35,6 @@ function handleTabDropped(tabId: string, panelId: string, nextIdx: number) {
 </script>
 
 <template>
-  <div>
-    tabs: {{ tabs }}<br>
-    panels: {{ panels }}
-  </div>
   <div class="panels-container">
     <Panel v-for="panel in panels" :id="panel.id" @tab-dropped="(id, nextIdx) => handleTabDropped(id, '1', nextIdx)" />
     <slot />
@@ -49,7 +45,11 @@ function handleTabDropped(tabId: string, panelId: string, nextIdx: number) {
 .panels-container {
   width: 100%;
   height: 100%;
-  border: 1px solid red;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 1px 3px 0px;
+  padding: 8px;
+
   display: flex;
 }
 </style>

@@ -123,7 +123,7 @@ function handleDragEnd() {
 
 <template>
   <div class="panel-container">
-    <div class="panel-navigation tab-drop-zone">
+    <div class="panel-navigation">
       <ul>
         <li v-for="item in availableTabs" :key="item.id" :id="`tab-${item.id}`"
           :class="{ active: item.id === activeTabId, 'drag-element': true, 'drag-over': dragOverItemId === item.id }"
@@ -165,12 +165,22 @@ function handleDragEnd() {
   display: flex;
   gap: 8px;
 
-  li.active {
-    border-bottom: 2px solid yellow;
+  li {
+    border-bottom: 2px solid #e0e0e0;
+
+    &.active {
+      border-bottom-color: #0f62fe;
+      font-weight: bold;
+    }
+
+    &.drag-over {
+      border-left: 2px solid blue;
+    }
+
+    &:hover:not(.active) {
+      border-bottom-color: #525252;
+    }
   }
 
-  li.drag-over {
-    border-left: 2px solid blue;
-  }
 }
 </style>
