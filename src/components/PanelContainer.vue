@@ -9,7 +9,6 @@ provide('panel-tabs', tabs)
 
 const panels = ref<PanelItem[]>([
   { id: '1', tabIds: [] },
-  { id: '2', tabIds: [] },
 ]
 )
 provide('panels', panels)

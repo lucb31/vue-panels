@@ -30,16 +30,6 @@ onMounted(() => {
     console.log("Tab already tracked")
     return
   }
-  // TODO: Debug remove
-  // Add tab to random panel
-  const targetPanel = panels.value[Math.floor(Math.random() * panels.value.length)]
-  targetPanel.tabIds.push(props.id)
-  // Select tab if first in panel
-  if (!targetPanel.activeTabId) {
-    targetPanel.activeTabId = props.id
-  }
-
-  return
   // Add tab to first panel
   const firstPanel = panels?.value[0]
   if (!firstPanel) {
