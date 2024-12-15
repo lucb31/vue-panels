@@ -4,7 +4,6 @@ import { TabItem } from './TabItem';
 import { PanelItem } from '../types/PanelItem';
 
 const props = defineProps<{ id: string }>()
-const emit = defineEmits<{ (e: 'tab-moved', fromTabId: string, toTabId: string): void }>()
 
 const tabs = inject<Ref<TabItem[]>>('panel-tabs')!
 const panels = inject<Ref<PanelItem[]>>('panels')!
@@ -61,6 +60,7 @@ function handleItemDrop(args: DragEvent, targetTabId: string) {
     tabs.value.move(prevIdx, nextIdx)
   }
 
+  dragOverItemId.value = ""
   moveTabToPanel(droppedTabId, targetPanelId)
 }
 
