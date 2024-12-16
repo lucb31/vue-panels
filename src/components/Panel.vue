@@ -150,7 +150,7 @@ function handleDragEnd() {
   </div>
 </template>
 
-<style scoped lang="scss">
+<style scoped>
 .panel-container {
   border: 1px solid blue;
   min-width: 25%;
@@ -169,32 +169,29 @@ function handleDragEnd() {
   padding: 8px;
 }
 
-.panel-navigation ul {
+.panel-navigation>ul {
   list-style: none;
   display: flex;
   gap: 8px;
   padding-inline-start: 0;
+}
 
-  li {
-    border-bottom: 2px solid #e0e0e0;
+.panel-navigation>ul>li {
+  border-bottom: 2px solid #e0e0e0;
+}
 
-    &.active {
-      border-bottom-color: #0f62fe;
-      font-weight: bold;
-    }
+.panel-navigation>ul>li.active {
+  border-bottom-color: #0f62fe;
+  font-weight: bold;
+}
 
+.panel-navigation>ul>li:hover:not(.active) {
+  border-bottom-color: #525252;
+}
 
-    &:hover:not(.active) {
-      border-bottom-color: #525252;
-    }
-  }
-
-  >li,
-  >div {
-    &.drag-over {
-      border-left: 2px solid blue;
-    }
-  }
+.panel-navigation>ul>li.drag-over,
+.panel-navigation>ul>div.drag-over {
+  border-left: 2px solid blue;
 }
 
 .panel-navigation>ul>div {
