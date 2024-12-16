@@ -1,1 +1,1 @@
-export type PanelItem = { id: string, activeTabId?: string, tabIds: string[] }
+export type PanelItem = { id: string, activeTabId?: string, tabIds: string[], width: string }

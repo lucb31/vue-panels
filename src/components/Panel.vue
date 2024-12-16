@@ -106,7 +106,7 @@ function moveTabToPanel(tabId: string, targetPanelId: string) {
 function moveTabToNewPanel(tabId: string) {
   // Create new panel
   const panelId = (Math.floor(Math.random() * 999999)).toString()
-  panels.value.push({ id: panelId, tabIds: [] })
+  panels.value.push({ id: panelId, tabIds: [], width: '50%' })
   moveTabToPanel(tabId, panelId)
 }
 
@@ -146,7 +146,6 @@ function handleDragEnd() {
 .panel-container {
   border: 1px solid blue;
   min-width: 25%;
-  flex-grow: 1;
   overflow: auto;
   height: 100%;
   display: flex;
