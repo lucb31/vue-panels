@@ -43,7 +43,12 @@ function handleItemDrop(args: DragEvent, targetTabId: string) {
     console.error("Could not move tab: Dropped tab not found")
     return
   }
-  const nextIdx = tabs.value.findIndex(tab => tab.id === targetTabId)
+  let nextIdx: number
+  if (targetTabId === 'END') {
+    nextIdx = tabs.value.length - 1
+  } else {
+    nextIdx = tabs.value.findIndex(tab => tab.id === targetTabId)
+  }
   if (nextIdx === -1) {
     console.error("Could not move tab: Target tab not found")
     return
@@ -126,14 +131,17 @@ function handleDragEnd() {
     <div class="panel-navigation">
       <ul>
         <li v-for="item in availableTabs" :key="item.id" :id="`tab-${item.id}`"
-          :class="{ active: item.id === activeTabId, 'drag-element': true, 'drag-over': dragOverItemId === item.id }"
-          draggable @dragstart="handleDragStart($event, item)" @drop="handleItemDrop($event, item.id)"
-          @dragend="handleDragEnd" @dragover.prevent="handleDragOver(item)" @dragenter.prevent>
+          :class="{ active: item.id === activeTabId, 'drag-over': dragOverItemId === item.id }" draggable
+          @dragstart="handleDragStart($event, item)" @drop="handleItemDrop($event, item.id)" @dragend="handleDragEnd"
+          @dragover.prevent="handleDragOver(item)" @dragenter.prevent>
           <a href="#" @click="() => navigateToTab(item.id)">
             {{ item.title }}
           </a>
           <button @click="moveTabToNewPanel(item.id)" v-if="panels.length < 2">Split</button>
         </li>
+        <div :class="{ 'drag-over': dragOverItemId === 'END' }" @dragover.prevent="() => dragOverItemId = 'END'"
+          @drop="handleItemDrop($event, 'END')">
+        </div>
       </ul>
     </div>
     <div class="panel-content" :id="`panel-content-${id}`">
@@ -175,14 +183,21 @@ function handleDragEnd() {
       font-weight: bold;
     }
 
-    &.drag-over {
-      border-left: 2px solid blue;
-    }
 
     &:hover:not(.active) {
       border-bottom-color: #525252;
     }
   }
 
+  >li,
+  >div {
+    &.drag-over {
+      border-left: 2px solid blue;
+    }
+  }
+}
+
+.panel-navigation>ul>div {
+  flex-grow: 1;
 }
 </style>
