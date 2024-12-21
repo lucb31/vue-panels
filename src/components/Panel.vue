@@ -3,6 +3,9 @@ import { computed, inject, Ref, ref } from 'vue';
 import { TabItem } from '../types/TabItem';
 import { PanelItem } from '../types/PanelItem';
 
+const MIN_PANEL_WIDTH = 20
+type SplitDirection = 'LEFT' | 'RIGHT'
+
 const props = defineProps<{ id: string }>()
 
 const tabs = inject<Ref<TabItem[]>>('panel-tabs')!
@@ -11,7 +14,7 @@ const panel = computed<PanelItem | undefined>(() => panels.value.find(panel => p
 const availableTabs = computed<TabItem[]>(() => tabs.value.filter(tab => panel.value?.tabIds?.includes(tab.id)))
 const activeTabId = computed<string | undefined>(() => panel.value?.activeTabId)
 const dragOverItemId = ref<string>("")
-
+const dragging = inject<Ref<boolean>>('panels-tab-dragging')!
 
 function navigateToTab(tabId: string) {
   if (!panel.value) {
@@ -29,9 +32,11 @@ function handleDragStart(args: DragEvent, tab: TabItem) {
   args.dataTransfer.dropEffect = 'move'
   args.dataTransfer.effectAllowed = 'move'
   args.dataTransfer.setData('itemID', tab.id)
+  dragging.value = true
 }
 
 function handleItemDrop(args: DragEvent, targetTabId: string) {
+  dragging.value = false
   // Validation
   const droppedTabId = args.dataTransfer?.getData('itemID')
   if (!droppedTabId) {
@@ -70,9 +75,13 @@ function handleItemDrop(args: DragEvent, targetTabId: string) {
 }
 
 function moveTabToPanel(tabId: string, targetPanelId: string) {
+  if (!panel.value) {
+    console.error("No current panel")
+    return
+  }
   const targetPanel = panels.value.find(p => p.id === targetPanelId)
   if (!targetPanel || targetPanel.tabIds.includes(tabId)) {
-    console.log("skipping panel move. Already inside")
+    console.debug("skipping panel move. Already inside")
     return
   }
   // Move to different panel
@@ -83,8 +92,10 @@ function moveTabToPanel(tabId: string, targetPanelId: string) {
   }
   const prevPanel = panels.value[prevPanelIdx]
   if (prevPanel.tabIds.length < 2) {
-    // Removing last panel tab: Remove panel
-    console.log("Last panel tab -> Removing panel")
+    // Last Panel tab
+    // -> Merge panel into current
+    panel.value.width += prevPanel.width
+    // -> Removing prev panel
     panels.value.splice(prevPanelIdx, 1)
   } else {
     // Remove from list of panel tabs
@@ -107,14 +118,6 @@ function moveTabToPanel(tabId: string, targetPanelId: string) {
   targetPanel.activeTabId = tabId
 }
 
-// Move given tabId to a new panel
-function moveTabToNewPanel(tabId: string) {
-  // Create new panel
-  const panelId = (Math.floor(Math.random() * 999999)).toString()
-  panels.value.push({ id: panelId, tabIds: [], width: '50%' })
-  moveTabToPanel(tabId, panelId)
-}
-
 function handleDragOver(item: TabItem) {
   if (item.id !== dragOverItemId.value) {
     dragOverItemId.value = item.id
@@ -123,6 +126,81 @@ function handleDragOver(item: TabItem) {
 
 function handleDragEnd() {
   dragOverItemId.value = ""
+  dragging.value = false
+}
+
+// Triggered when a tab is dragged over a 'split panel' preview element
+function handleDragOverSplitPreview(args: DragEvent, inside: boolean) {
+  // Check if we're currently dragging a tab item
+  if (!dragging.value) {
+    console.debug("Ignoring drag over event: Not a tab drag")
+    return
+  }
+  const element = args.target as HTMLElement
+  if (inside) {
+    element.classList.add("hovering")
+  } else {
+    element.classList.remove("hovering")
+  }
+}
+
+// Triggered when a tab is dropped over a 'split panel' preview element
+function handleSplitDrop(args: DragEvent, direction: SplitDirection) {
+  // Reset hover state
+  const element = args.target as HTMLElement
+  element.classList.remove("hovering")
+
+  // Validate
+  const droppedTabId = args.dataTransfer?.getData('itemID')
+  if (!droppedTabId) {
+    console.warn("Ignoring split: Did not receive tab id")
+    return
+  }
+  if (panel.value?.tabIds.length === 1 && panel.value.tabIds[0] === droppedTabId) {
+    console.error("Aborting split: Cannot split panel with exactly 1 tab")
+    return
+  }
+  const newPanel = splitPanel(direction)
+  if (newPanel !== null) {
+    moveTabToPanel(droppedTabId, newPanel.id)
+  }
+}
+
+// Splits a panel into two equally distributing its available width
+function splitPanel(direction: SplitDirection): PanelItem | null {
+  if (!panel.value) {
+    console.error("No active panel")
+    return null
+  }
+  // Calculate target size
+  const newWidth = panel.value.width / 2
+  if (newWidth < MIN_PANEL_WIDTH) {
+    console.error("Cannot split panels any further. Below minimum width")
+    return null
+  }
+
+  // Calculate insert position
+  const currentPanelIdx = panels.value.findIndex(panel => panel.id === props.id)
+  let insertIdx: number
+  if (currentPanelIdx === -1) {
+    // Insert at end
+    insertIdx = panels.value.length
+  } else if (direction === 'LEFT') {
+    // Insert before current panel
+    insertIdx = currentPanelIdx
+  } else {
+    // Insert after current panel
+    insertIdx = currentPanelIdx + 1
+  }
+
+  // Resize current panel
+  panel.value.width = newWidth
+
+  // Create new panel
+  const panelId = (Math.floor(Math.random() * 999999)).toString()
+  const newPanel: PanelItem = { id: panelId, tabIds: [], width: newWidth }
+  panels.value.splice(insertIdx, 0, newPanel)
+  return newPanel
 }
 </script>
 
@@ -137,7 +215,6 @@ function handleDragEnd() {
           <a href="#" @click="() => navigateToTab(item.id)">
             {{ item.title }}
           </a>
-          <button @click="moveTabToNewPanel(item.id)" v-if="panels.length < 2">Split</button>
         </li>
         <div :class="{ 'drag-over': dragOverItemId === 'END' }" @dragover.prevent="() => dragOverItemId = 'END'"
           @drop="handleItemDrop($event, 'END')">
@@ -146,6 +223,12 @@ function handleDragEnd() {
     </div>
     <div class="panel-content" :id="`panel-content-${id}`">
       <slot />
+      <div class="panels-overlay panels-overlay-left" @dragover.prevent="handleDragOverSplitPreview($event, true)"
+        @dragleave.prevent="handleDragOverSplitPreview($event, false)" @drop="handleSplitDrop($event, 'LEFT')">
+      </div>
+      <div class="panels-overlay panels-overlay-right" @dragover.prevent="handleDragOverSplitPreview($event, true)"
+        @dragleave.prevent="handleDragOverSplitPreview($event, false)" @drop="handleSplitDrop($event, 'RIGHT')">
+      </div>
     </div>
   </div>
 </template>
@@ -153,9 +236,8 @@ function handleDragEnd() {
 <style scoped>
 .panel-container {
   border: 1px solid blue;
-  min-width: 25%;
+  min-width: 20%;
   overflow: auto;
-  height: 100%;
   display: flex;
   flex-direction: column;
   padding: 8px;
@@ -167,6 +249,7 @@ function handleDragEnd() {
   flex-grow: 1;
   color: black;
   padding: 8px;
+  position: relative;
 }
 
 .panel-navigation>ul {
@@ -196,5 +279,20 @@ function handleDragEnd() {
 
 .panel-navigation>ul>div {
   flex-grow: 1;
+}
+
+.panels-overlay {
+  position: absolute;
+  width: 50%;
+  height: calc(100% - 16px);
+}
+
+.panels-overlay.panels-overlay-right {
+  left: 50%;
+}
+
+.panels-overlay.hovering {
+  background-color: rgba(0, 0, 0, 0.5);
+  border: 1px dashed blue;
 }
 </style>

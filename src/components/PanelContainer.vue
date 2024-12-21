@@ -8,8 +8,11 @@ import { useResize } from '../composables/resize';
 const tabs = ref<TabItem[]>([])
 provide('panel-tabs', tabs)
 
-const panels = ref<PanelItem[]>([{ id: '1', tabIds: [], width: '100%' },])
+const panels = ref<PanelItem[]>([{ id: '1', tabIds: [], width: 100 },])
 provide('panels', panels)
+
+const tabDragging = ref<boolean>(false)
+provide('panels-tab-dragging', tabDragging)
 
 const panelContainer = ref<HTMLElement | null>(null)
 const { startResizing } = useResize(panelContainer)
@@ -19,7 +22,7 @@ const { startResizing } = useResize(panelContainer)
   <div ref="panelContainer" class="panels-container" :key="panels.length">
     <template v-for="panel, idx in panels">
       <Panel :id="panel.id"
-        :style="{ width: idx < panels.length - 1 ? panel.width : undefined, 'flex-grow': idx == panels.length - 1 ? '1' : undefined }" />
+        :style="{ width: idx < panels.length - 1 ? `${panel.width}%` : undefined, 'flex-grow': idx == panels.length - 1 ? '1' : undefined }" />
       <div v-if="idx < panels.length - 1" class="panel-resize-handle" @mousedown="startResizing($event, panel)">
       </div>
     </template>
@@ -29,8 +32,8 @@ const { startResizing } = useResize(panelContainer)
 
 <style scoped>
 .panels-container {
-  width: 100%;
-  height: 100%;
+  width: calc(100% - 8px);
+  height: calc(100% - 8px);
   border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 4px;
   box-shadow: rgba(0, 0, 0, 0.1) 0px 1px 3px 0px;

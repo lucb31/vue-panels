@@ -1,7 +1,15 @@
 {
   "name": "vue-panels",
+  "description": "Management of tabs across multiple resizable panels",
+  "keywords": ["vue", "panels", "tabs", "layout", "resize"],
+  "homepage": "https://github.com/lucb31/vue-panels",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lucb31/vue-panels.git"
+  },
   "private": true,
   "version": "0.0.0",
+  "author": "Lucas Berchtold",
   "type": "module",
   "scripts": {
     "dev": "vite",

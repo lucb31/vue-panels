@@ -1,6 +1,6 @@
 import { onUnmounted, Ref } from "vue"
 
-type ResizeTarget = { width: string }
+type ResizeTarget = { width: number }
 
 export const useResize = (panelContainer: Ref<HTMLElement | null>) => {
   let resizeTarget: ResizeTarget | null
@@ -12,7 +12,7 @@ export const useResize = (panelContainer: Ref<HTMLElement | null>) => {
     if (!dragElement) {
       return
     }
-    dragElement.style.width = calcNewPanelWidth(args.pageX - dragStartX)
+    dragElement.style.width = toPercentageString(calcNewPanelWidth(args.pageX - dragStartX))
   }
 
   const handleMouseUp = (args: MouseEvent) => {
@@ -44,22 +44,25 @@ export const useResize = (panelContainer: Ref<HTMLElement | null>) => {
     dragStartWidth = dragElement.offsetWidth
     window.addEventListener('mouseup', handleMouseUp)
     window.addEventListener('mousemove', handleMouseMove)
-    dragElement.style.width = calcNewPanelWidth(args.pageX - dragStartX)
+    dragElement.style.width = toPercentageString(calcNewPanelWidth(args.pageX - dragStartX))
+  }
+
+  function toPercentageString(width: number): string {
+    return `${width}%`
   }
 
 
   // @param offsetX: Delta between dragStart and current mouse position
   // @returns: New calculated width in percent
-  function calcNewPanelWidth(offsetX: number): string {
+  function calcNewPanelWidth(offsetX: number): number {
     if (!panelContainer.value) {
       console.error("Cannot resize: No parent container")
-      return ""
+      return 0
     }
     const containerWidth = panelContainer.value.clientWidth
     const paneWidth = dragStartWidth + offsetX
     const resultWidthInPercent = paneWidth / containerWidth * 100
-
-    return `${resultWidthInPercent}%`
+    return resultWidthInPercent
   }
 
   onUnmounted(() => {
